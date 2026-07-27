@@ -1,2 +1,24 @@
-node_modules/ 
-node_modules
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment variables & local secrets
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
