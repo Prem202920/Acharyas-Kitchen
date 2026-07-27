@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #fff8f5;
+    color: #1e1b18;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.soft-shadow {
+  box-shadow: 0 20px 25px -5px rgba(135, 52, 21, 0.04), 0 10px 10px -5px rgba(135, 52, 21, 0.02);
+}
+
+.chef-note {
+  border-left: 4px solid #873415;
+}
+
+.nav-glass {
+  background-color: rgba(255, 248, 245, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
