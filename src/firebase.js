@@ -6,7 +6,8 @@ import {
   signOut, 
   onAuthStateChanged,
   updateProfile,
-  signInAnonymously
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 
 // Read Firebase configuration directly from Vite environment variables
@@ -26,11 +27,14 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication service
 export const auth = getAuth(app);
 
+// Instantiate Google Auth Provider
+export const googleProvider = new GoogleAuthProvider();
+
 export {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   updateProfile,
-  signInAnonymously
+  signInWithPopup
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Star, ArrowRight } from 'lucide-react';
+import { formatPrice } from '../data/menuData';
 
 export default function TrendingDishes({ items, onAddToCart, onViewAllClick }) {
   const mainFeature = items.find(item => item.id === 'item-1') || items[0];
@@ -54,7 +55,7 @@ export default function TrendingDishes({ items, onAddToCart, onViewAllClick }) {
                       {mainFeature.name}
                     </h3>
                     <span className="font-body text-xl font-bold text-primary shrink-0">
-                      ${mainFeature.price.toFixed(2)}
+                      {formatPrice(mainFeature.price)}
                     </span>
                   </div>
                   <p className="font-body text-body-md text-on-surface-variant leading-relaxed mb-4">
@@ -112,7 +113,7 @@ export default function TrendingDishes({ items, onAddToCart, onViewAllClick }) {
                         {item.name}
                       </h4>
                       <span className="font-body text-base font-bold text-primary">
-                        ${item.price.toFixed(2)}
+                        {formatPrice(item.price)}
                       </span>
                     </div>
                     <p className="font-body text-xs text-on-surface-variant line-clamp-2 leading-relaxed mb-3">

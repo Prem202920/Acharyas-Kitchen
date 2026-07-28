@@ -9,7 +9,7 @@ import ChefNoteAndReviews from './components/ChefNoteAndReviews';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
-import { MENU_ITEMS } from './data/menuData';
+import { MENU_ITEMS, formatPrice } from './data/menuData';
 import { auth, onAuthStateChanged, signOut } from './firebase';
 import { X, Plus, Star, Clock, Utensils } from 'lucide-react';
 
@@ -18,11 +18,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Cart & Modal State
-  const [cart, setCart] = useState([
-    { ...MENU_ITEMS[0], quantity: 1 },
-    { ...MENU_ITEMS[2], quantity: 2 }
-  ]);
+  // Cart & Modal State - Initial state is clean empty array by default
+  const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState(null);
@@ -37,8 +34,7 @@ export default function App() {
           name: currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Gourmet Diner')
         });
       } else {
-        // Reset user when logged out from Firebase
-        setUser((prev) => (prev?.isDemo ? prev : null));
+        setUser(null);
       }
       setAuthLoading(false);
     });
@@ -47,10 +43,6 @@ export default function App() {
   }, []);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const handleDemoLoginSuccess = (guestUser) => {
-    setUser({ ...guestUser, isDemo: true });
-  };
 
   const handleLogout = async () => {
     try {
@@ -104,12 +96,12 @@ export default function App() {
   // Loading Screen while Firebase initializes persistent auth session
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4 font-body">
         <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center soft-shadow animate-bounce">
           <Utensils className="w-8 h-8 text-primary" />
         </div>
         <p className="font-headline text-lg font-semibold text-primary">
-          Initializing Acharya's Kitchen Auth...
+          Connecting to Acharya's Kitchen Auth...
         </p>
       </div>
     );
@@ -117,7 +109,7 @@ export default function App() {
 
   // 1. Strict Auth Check: If user is NOT logged in, render the AuthScreen
   if (!user) {
-    return <AuthScreen onDemoLoginSuccess={handleDemoLoginSuccess} />;
+    return <AuthScreen />;
   }
 
   // 2. Main Application Dashboard once user is verified & logged in
@@ -197,7 +189,7 @@ export default function App() {
                   {selectedDish.name}
                 </h3>
                 <span className="font-body text-xl font-bold text-primary">
-                  ${selectedDish.price.toFixed(2)}
+                  {formatPrice(selectedDish.price)}
                 </span>
               </div>
 
@@ -235,7 +227,7 @@ export default function App() {
                 className="w-full bg-primary text-on-primary py-3.5 rounded-lg font-label text-label-lg font-semibold hover:bg-primary-container transition-all flex items-center justify-center gap-2 soft-shadow pt-3"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add to Order — ${selectedDish.price.toFixed(2)}</span>
+                <span>Add to Order — {formatPrice(selectedDish.price)}</span>
               </button>
             </div>
           </div>

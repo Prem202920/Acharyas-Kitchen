@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Clock, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
+import { formatPrice } from '../data/menuData';
 
 export default function CheckoutModal({ isOpen, onClose, cart, onClearCart }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: 'Prem Acharya',
-    phone: '+1 (555) 234-5678',
-    address: '742 Evergreen Terrace, Suite 4B',
-    instructions: 'Ring doorbell twice. Leave at front entry.',
+    phone: '+91 98765 43210',
+    address: '42 Heritage Lane, Indiranagar, Bengaluru',
+    instructions: 'Ring doorbell twice. Leave at security desk if unavailable.',
     paymentMethod: 'card'
   });
 
   if (!isOpen) return null;
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = (subtotal * 1.08 + 3.99).toFixed(2);
+  const tax = subtotal * 0.05; // 5% GST
+  const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery & packaging fee
+  const total = subtotal + tax + deliveryFee;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,7 +80,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onClearCart }) {
               </div>
               <div className="flex justify-between pt-2 border-t border-outline-variant/20 font-bold text-sm text-on-surface">
                 <span>Amount Paid:</span>
-                <span className="text-primary">${total}</span>
+                <span className="text-primary">{formatPrice(total)}</span>
               </div>
             </div>
 
@@ -149,7 +152,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onClearCart }) {
                     className="accent-primary"
                   />
                   <CreditCard className="w-4 h-4" />
-                  <span>Credit Card</span>
+                  <span>Credit / UPI Card</span>
                 </label>
 
                 <label className={`p-3 border rounded-lg flex items-center gap-2 cursor-pointer transition-colors ${
@@ -171,7 +174,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onClearCart }) {
             <div className="pt-4 border-t border-outline-variant/30 flex justify-between items-center">
               <div>
                 <span className="font-body text-xs text-on-surface-variant">Total Amount Due</span>
-                <div className="font-headline text-xl font-bold text-primary">${total}</div>
+                <div className="font-headline text-xl font-bold text-primary">{formatPrice(total)}</div>
               </div>
               <button
                 type="submit"

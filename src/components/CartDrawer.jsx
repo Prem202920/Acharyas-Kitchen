@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag } from 'lucide-react';
+import { formatPrice } from '../data/menuData';
 
 export default function CartDrawer({ isOpen, onClose, cart, onUpdateQuantity, onRemoveItem, onCheckout }) {
   const [promoCode, setPromoCode] = useState('');
@@ -9,8 +10,8 @@ export default function CartDrawer({ isOpen, onClose, cart, onUpdateQuantity, on
   if (!isOpen) return null;
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
-  const deliveryFee = subtotal > 0 ? 3.99 : 0;
+  const tax = subtotal * 0.05; // 5% GST
+  const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery & packaging fee
   const discountAmount = subtotal * discount;
   const total = Math.max(0, subtotal + tax + deliveryFee - discountAmount);
 
@@ -68,7 +69,7 @@ export default function CartDrawer({ isOpen, onClose, cart, onUpdateQuantity, on
                       {item.name}
                     </h3>
                     <div className="font-body text-sm font-bold text-primary mt-0.5">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.price * item.quantity)}
                     </div>
                     
                     {/* Quantity controls */}
@@ -109,7 +110,7 @@ export default function CartDrawer({ isOpen, onClose, cart, onUpdateQuantity, on
                 </div>
                 <p className="font-headline text-lg font-semibold text-on-surface">Your cart is empty</p>
                 <p className="font-body text-sm text-on-surface-variant max-w-xs mx-auto">
-                  Add some delicious authentic dishes from our menu to begin your culinary journey.
+                  Explore our menu to add delicious dishes!
                 </p>
               </div>
             )}
@@ -144,25 +145,25 @@ export default function CartDrawer({ isOpen, onClose, cart, onUpdateQuantity, on
               <div className="space-y-1.5 font-body text-xs text-on-surface-variant border-t border-outline-variant/20 pt-3">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-medium text-on-surface">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-on-surface">{formatPrice(subtotal)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-secondary">
                     <span>Discount (10%)</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatPrice(discountAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span>Tax (8%)</span>
-                  <span className="font-medium text-on-surface">${tax.toFixed(2)}</span>
+                  <span>GST / Tax (5%)</span>
+                  <span className="font-medium text-on-surface">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Eco-Packaging & Delivery</span>
-                  <span className="font-medium text-on-surface">${deliveryFee.toFixed(2)}</span>
+                  <span className="font-medium text-on-surface">{formatPrice(deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between font-headline text-lg font-bold text-on-surface pt-2 border-t border-outline-variant/30">
                   <span>Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">{formatPrice(total)}</span>
                 </div>
               </div>
 

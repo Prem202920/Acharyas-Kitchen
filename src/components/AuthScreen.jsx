@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import {
-  Mail, Lock, User, Phone, ArrowRight, ShieldCheck, Sparkles,
-  CheckCircle2, Eye, EyeOff, Check, X, AlertCircle
+import { 
+  Mail, Lock, User, Phone, ArrowRight, ShieldCheck, Sparkles, 
+  CheckCircle2, Eye, EyeOff, Check, X, AlertCircle 
 } from 'lucide-react';
-import {
-  auth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  signInAnonymously
+import { 
+  auth, 
+  googleProvider,
+  signInWithPopup,
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  updateProfile
 } from '../firebase';
 
-export default function AuthScreen({ onDemoLoginSuccess }) {
+export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -64,9 +65,13 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
         return 'Account access temporarily blocked due to many failed attempts. Please try again later.';
       case 'auth/network-request-failed':
         return 'Network connection error. Please check your internet connection.';
+      case 'auth/popup-closed-by-user':
+        return 'Google sign-in popup was closed before completing.';
+      case 'auth/popup-blocked':
+        return 'Sign-in popup was blocked by your browser. Please allow popups for this site.';
       case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
       case 'auth/invalid-api-key':
-        return 'Firebase config placeholder detected. For live production Firebase Auth, please add your VITE_FIREBASE_API_KEY in .env file or use Guest Mode below.';
+        return 'Firebase config placeholder detected. Please add your VITE_FIREBASE_API_KEY in .env.local.';
       default:
         return error.message || 'An unexpected authentication error occurred. Please try again.';
     }
@@ -99,11 +104,11 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
 
       try {
         const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          formData.email.trim(),
+          auth, 
+          formData.email.trim(), 
           formData.password
         );
-
+        
         // Update user profile display name if provided
         if (formData.name.trim() && userCredential.user) {
           await updateProfile(userCredential.user, {
@@ -128,20 +133,17 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
     }
   };
 
-  const handleDemoLogin = async () => {
+  // Google Sign-In Handler
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setErrorMessage('');
+    setSuccessMessage('');
     try {
-      await signInAnonymously(auth);
+      await signInWithPopup(auth, googleProvider);
+      // Successful sign in automatically triggers onAuthStateChanged in App.jsx and redirects to main dashboard
     } catch (error) {
-      console.warn("Anonymous Firebase sign in unavailable, falling back to local guest mode:", error);
-      if (onDemoLoginSuccess) {
-        onDemoLoginSuccess({
-          uid: 'demo-guest-123',
-          displayName: 'Guest Gourmet Diner',
-          email: 'guest@acharyaskitchen.com'
-        });
-      }
+      console.error("Google Sign-In Error:", error);
+      setErrorMessage(getFirebaseErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -156,10 +158,10 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10 space-y-4">
         {/* Brand Logo */}
         <div className="inline-flex items-center justify-center gap-3 group cursor-pointer">
-          <img
-            alt="Acharya's Kitchen Logo"
-            className="h-12 w-12 object-contain transition-transform duration-300 group-hover:scale-105"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCBqoCF2eJMk0dv6amHm_TTGFgisJdRw4S3VURCeL4r2TqA4tHJN9wtl2osP8XgB87WWG_2crCE-26wA5SFbNg2rBMD357op3qlI31kJ2w0Eu_LyecYYvSArssmnta7rt4C-oXX6olp2g9MaSg_lOvxka4m_nqlEllgNKJzCQshbhDd5uq2jL7n3r10exyLgag8CQJCKvyFIEkF3PyOBs3nev4USNEZnH8xkI6hdngsj3Xt5AGZDJCS-BnNSUQD8N67bDZ1c2kPC8"
+          <img 
+            alt="Acharya's Kitchen Logo" 
+            className="h-12 w-12 object-contain transition-transform duration-300 group-hover:scale-105" 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCBqoCF2eJMk0dv6amHm_TTGFgisJdRw4S3VURCeL4r2TqA4tHJN9wtl2osP8XgB87WWG_2crCE-26wA5SFbNg2rBMD357op3qlI31kJ2w0Eu_LyecYYvSArssmnta7rt4C-oXX6olp2g9MaSg_lOvxka4m_nqlEllgNKJzCQshbhDd5uq2jL7n3r10exyLgag8CQJCKvyFIEkF3PyOBs3nev4USNEZnH8xkI6hdngsj3Xt5AGZDJCS-BnNSUQD8N67bDZ1c2kPC8" 
           />
           <h1 className="font-headline text-3xl font-bold text-primary tracking-tight">
             Acharya's Kitchen
@@ -178,26 +180,28 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4 sm:px-0">
         <div className="bg-surface py-8 px-6 shadow-soft sm:rounded-2xl border border-outline-variant/30 sm:px-10 space-y-6">
-
+          
           {/* Tab Switcher */}
           <div className="flex border-b border-outline-variant/30">
             <button
               type="button"
               onClick={() => handleTabSwitch(true)}
-              className={`flex-1 py-3 text-center font-label text-label-lg font-semibold transition-colors border-b-2 ${isLogin
+              className={`flex-1 py-3 text-center font-label text-label-lg font-semibold transition-colors border-b-2 ${
+                isLogin
                   ? 'border-primary text-primary'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'
-                }`}
+              }`}
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={() => handleTabSwitch(false)}
-              className={`flex-1 py-3 text-center font-label text-label-lg font-semibold transition-colors border-b-2 ${!isLogin
+              className={`flex-1 py-3 text-center font-label text-label-lg font-semibold transition-colors border-b-2 ${
+                !isLogin
                   ? 'border-primary text-primary'
                   : 'border-transparent text-on-surface-variant hover:text-on-surface'
-                }`}
+              }`}
             >
               Create Account
             </button>
@@ -296,7 +300,7 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
                   className="w-full pl-10 pr-10 py-2.5 bg-surface-container-low border border-outline-variant/40 rounded-lg text-sm text-on-surface focus:outline-none focus:border-primary"
                 />
                 <Lock className="w-4 h-4 text-on-surface-variant absolute left-3 top-3" />
-
+                
                 {/* Password Toggle Button */}
                 <button
                   type="button"
@@ -354,7 +358,7 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
                 <span>Authenticating with Firebase...</span>
               ) : (
                 <>
-                  <span>{isLogin ? 'Log In with Firebase' : 'Register with Firebase'}</span>
+                  <span>{isLogin ? 'Log In with Email' : 'Register with Email'}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -368,20 +372,37 @@ export default function AuthScreen({ onDemoLoginSuccess }) {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-surface px-2 text-on-surface-variant font-label">
-                Or Instant Access
+                Or Continue With
               </span>
             </div>
           </div>
 
-          {/* Quick Demo / Guest Login */}
+          {/* Google Sign-In Button */}
           <button
             type="button"
-            onClick={handleDemoLogin}
+            onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full border border-secondary text-secondary py-2.5 px-4 rounded-lg font-label text-xs font-semibold hover:bg-secondary-container/30 transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-surface-container-lowest border border-outline-variant/40 text-on-surface hover:bg-surface-container py-3 px-4 rounded-lg font-label text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-3 soft-shadow hover:border-outline-variant/60"
           >
-            <CheckCircle2 className="w-4 h-4 text-secondary" />
-            <span>Explore as Guest / Anonymous User</span>
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+              />
+            </svg>
+            <span>Continue with Google</span>
           </button>
 
           {/* Safety Notice */}

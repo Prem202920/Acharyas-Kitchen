@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MENU_CATEGORIES } from '../data/menuData';
+import { MENU_CATEGORIES, formatPrice } from '../data/menuData';
 import { Search, Plus, Star, Clock, Sparkles } from 'lucide-react';
 
 export default function FullMenu({ items, onAddToCart, onItemClick }) {
@@ -102,7 +102,7 @@ export default function FullMenu({ items, onAddToCart, onItemClick }) {
                         {item.name}
                       </h3>
                       <span className="font-body text-lg font-bold text-primary shrink-0">
-                        ${item.price.toFixed(2)}
+                        {formatPrice(item.price)}
                       </span>
                     </div>
 
