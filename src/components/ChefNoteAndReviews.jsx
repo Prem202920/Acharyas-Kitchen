@@ -9,22 +9,22 @@ export default function ChefNoteAndReviews() {
         {/* Left Column: Chef's Note Quote Container */}
         <div className="chef-note bg-surface p-8 lg:p-12 rounded-r-xl soft-shadow border border-outline-variant/30 space-y-6">
           <Quote className="w-12 h-12 text-primary opacity-80" />
-          
+
           <h2 className="font-display text-2xl lg:text-headline-lg text-on-surface italic leading-relaxed">
             "Cooking is a language of love. In Acharya's Kitchen, every dish tells a story of tradition, patience, and the perfect blend of slow-roasted spices."
           </h2>
 
           <div className="flex items-center gap-4 pt-4 border-t border-outline-variant/30">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary shrink-0 soft-shadow">
-              <img 
-                className="w-full h-full object-cover" 
-                alt="Chef Rajesh Acharya" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuoB1N0ZPG16zAwJJg251A8fonNuyOmW4w7JYSYBO7zmDwFmP8-ILENXH2JaB5hNuIp8GiHZCUSEaY0B3AsLPn6nP2_TLIlggHOmd-NZb6OcHlMv4SaWkVJFimqvACmBJvBobk2Q4t56o2_BOkX7-ileIYBBAfr9wAe_gKyDO8IE2ZcIaHSy6Xl1oy98b0DJPYtuLBYpd9BpHWfba_a0ZdrDlVhvdJdXuHH7CLJKB4m3T8OOvvGEn7f_4Ql9rxRGmcHGOHJBn9NvQ" 
+              <img
+                className="w-full h-full object-cover"
+                alt="Chef Acharya Sai"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuoB1N0ZPG16zAwJJg251A8fonNuyOmW4w7JYSYBO7zmDwFmP8-ILENXH2JaB5hNuIp8GiHZCUSEaY0B3AsLPn6nP2_TLIlggHOmd-NZb6OcHlMv4SaWkVJFimqvACmBJvBobk2Q4t56o2_BOkX7-ileIYBBAfr9wAe_gKyDO8IE2ZcIaHSy6Xl1oy98b0DJPYtuLBYpd9BpHWfba_a0ZdrDlVhvdJdXuHH7CLJKB4m3T8OOvvGEn7f_4Ql9rxRGmcHGOHJBn9NvQ"
               />
             </div>
             <div>
               <h3 className="font-headline text-headline-md font-semibold text-primary">
-                Chef Rajesh Acharya
+                Chef Acharya Sai
               </h3>
               <p className="font-label text-label-md text-on-surface-variant uppercase tracking-widest font-semibold">
                 Founder & Executive Chef
@@ -46,8 +46,8 @@ export default function ChefNoteAndReviews() {
 
           <div className="space-y-6">
             {TESTIMONIALS.map(t => (
-              <div 
-                key={t.id} 
+              <div
+                key={t.id}
                 className="bg-surface p-6 lg:p-8 rounded-xl soft-shadow border border-outline-variant/30 space-y-4 hover:border-primary/30 transition-colors"
               >
                 <div className="flex justify-between items-center">

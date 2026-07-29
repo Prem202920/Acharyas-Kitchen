@@ -133,23 +133,23 @@ export const MENU_ITEMS = [
 export const TESTIMONIALS = [
   {
     id: 1,
-    name: "Elena Richardson",
-    role: "Verified Food Critic",
+    name: "Adwin George",
+    role: "eClerx Employee of the Year",
     content: "The most authentic flavors I've experienced since leaving India. The delivery was remarkably fast, and the sustainable earthenware packaging was beautiful. Truly a premium experience.",
-    rating: 5,
+    rating: 4,
   },
   {
     id: 2,
-    name: "Mark Thompson",
-    role: "Regular Customer",
-    content: "Acharya's Kitchen has become our go-to for Friday night dinners. The Rogan Josh is incredible—you can really taste the freshness and depth of spices in every single bite.",
+    name: "Prem Patil",
+    role: "Regular Computer Science Student",
+    content: "Acharya's Kitchen has become my go-to for Friday night dinners. The Rogan Josh is incredible—you can really taste the freshness and depth of spices in every single bite.",
     rating: 5,
   },
   {
     id: 3,
-    name: "Dr. Ananya Sharma",
-    role: "Culinary Enthusiast",
+    name: "Pranav Deshmukh",
+    role: "BGMI eSports Player",
     content: "The Signature Vegetable Korma is culinary art! You rarely find cloud kitchens that maintain such high editorial standards in both food presentation and taste.",
-    rating: 5,
+    rating: 4,
   }
 ];
