@@ -9,6 +9,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp 
+} from 'firebase/firestore';
 
 // Read Firebase configuration directly from Vite environment variables
 const firebaseConfig = {
@@ -27,6 +33,9 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication service
 export const auth = getAuth(app);
 
+// Initialize Firestore Database service
+export const db = getFirestore(app);
+
 // Instantiate Google Auth Provider
 export const googleProvider = new GoogleAuthProvider();
 
@@ -36,5 +45,8 @@ export {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  signInWithPopup
+  signInWithPopup,
+  collection,
+  addDoc,
+  serverTimestamp
 };
