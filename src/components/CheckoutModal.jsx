@@ -31,46 +31,6 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
   const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery & packaging fee
   const total = subtotal + tax + deliveryFee;
 
-  // Finalize Order (Saves to Firestore and switches to Confirmation Screen)
-  const handleFinalizeOrder = async (paymentId, method) => {
-    const pId = paymentId || `pay_${Date.now()}`;
-    const orderData = {
-      paymentId: pId,
-      razorpayPaymentId: pId,
-      customerName: formData.name,
-      customerPhone: formData.phone,
-      customerAddress: formData.address,
-      customerEmail: user?.email || 'customer@acharyaskitchen.com',
-      userId: user?.uid || 'guest',
-      items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
-      subtotal: subtotal,
-      tax: tax,
-      deliveryFee: deliveryFee,
-      totalAmount: total,
-      status: 'Paid',
-      paymentMethod: method || 'Razorpay',
-      createdAt: serverTimestamp(),
-      timestamp: new Date().toISOString()
-    };
-
-    // Save to Firestore /orders collection
-    try {
-      await addDoc(collection(db, 'orders'), orderData);
-    } catch (err) {
-      console.warn("Firestore order record fallback note:", err);
-    }
-
-    setPaymentInfo({
-      paymentId: pId,
-      total: total,
-      method: method || 'Razorpay Online',
-      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-    });
-
-    setIsSubmitted(true);
-    if (onClearCart) onClearCart();
-  };
-
   const handleRazorpayCheckout = async () => {
     setIsProcessing(true);
     setToastMessage('');
@@ -87,6 +47,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
 
     const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TJm7wCoJrC5TFa';
     const amountInPaise = Math.round(total * 100);
+    const currentCart = [...cart];
+    const currentTotal = total;
 
     const options = {
       key: razorpayKey,
@@ -109,10 +71,49 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
       theme: {
         color: '#873415' // Terracotta primary brand color
       },
-      handler: function (response) {
-        // ONLY inside this callback function, save order to Firestore and transition to confirmation screen
+      handler: async function (response) {
         setIsProcessing(false);
-        handleFinalizeOrder(response.razorpay_payment_id, 'Razorpay');
+        const paymentId = response?.razorpay_payment_id || `pay_${Date.now()}`;
+
+        // 1. Immediately transition UI to Order Confirmed screen with Payment ID
+        setPaymentInfo({
+          paymentId: paymentId,
+          total: currentTotal,
+          method: 'Razorpay',
+          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        });
+        setIsSubmitted(true);
+
+        // 2. Clear user cart
+        if (onClearCart) {
+          onClearCart();
+        }
+
+        // 3. Save order details to Firestore (safely wrapped in try/catch)
+        try {
+          const orderData = {
+            paymentId: paymentId,
+            razorpayPaymentId: paymentId,
+            customerName: formData.name,
+            customerPhone: formData.phone,
+            customerAddress: formData.address,
+            customerEmail: user?.email || 'customer@acharyaskitchen.com',
+            userId: user?.uid || 'guest',
+            items: currentCart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+            subtotal: subtotal,
+            tax: tax,
+            deliveryFee: deliveryFee,
+            totalAmount: currentTotal,
+            status: 'Paid',
+            paymentMethod: 'Razorpay',
+            createdAt: serverTimestamp(),
+            timestamp: new Date().toISOString()
+          };
+
+          await addDoc(collection(db, 'orders'), orderData);
+        } catch (firestoreErr) {
+          console.error("Firestore Order Save Warning (UI rendered successfully):", firestoreErr);
+        }
       },
       modal: {
         ondismiss: function () {
@@ -139,13 +140,55 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
     }
   };
 
+  const handleCodCheckout = async () => {
+    const paymentId = `cod_${Math.floor(100000 + Math.random() * 900000)}`;
+    const currentCart = [...cart];
+    const currentTotal = total;
+
+    setPaymentInfo({
+      paymentId: paymentId,
+      total: currentTotal,
+      method: 'Cash on Delivery',
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    });
+    setIsSubmitted(true);
+
+    if (onClearCart) {
+      onClearCart();
+    }
+
+    try {
+      const orderData = {
+        paymentId: paymentId,
+        razorpayPaymentId: paymentId,
+        customerName: formData.name,
+        customerPhone: formData.phone,
+        customerAddress: formData.address,
+        customerEmail: user?.email || 'customer@acharyaskitchen.com',
+        userId: user?.uid || 'guest',
+        items: currentCart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+        subtotal: subtotal,
+        tax: tax,
+        deliveryFee: deliveryFee,
+        totalAmount: currentTotal,
+        status: 'Pending COD',
+        paymentMethod: 'Cash on Delivery',
+        createdAt: serverTimestamp(),
+        timestamp: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, 'orders'), orderData);
+    } catch (firestoreErr) {
+      console.error("Firestore COD Order Save Warning (UI rendered successfully):", firestoreErr);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.paymentMethod === 'razorpay') {
       handleRazorpayCheckout();
     } else {
-      // Cash on Delivery
-      handleFinalizeOrder(`cod_${Math.floor(100000 + Math.random() * 900000)}`, 'Cash on Delivery');
+      handleCodCheckout();
     }
   };
 
