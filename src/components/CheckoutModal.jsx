@@ -31,7 +31,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
   const deliveryFee = subtotal > 0 ? 40 : 0; // ₹40 delivery & packaging fee
   const total = subtotal + tax + deliveryFee;
 
-  // Process order storage & confirmation state
+  // Finalize Order (Saves to Firestore and switches to Confirmation Screen)
   const handleFinalizeOrder = async (paymentId, method) => {
     const pId = paymentId || `pay_${Date.now()}`;
     const orderData = {
@@ -75,13 +75,14 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
     setIsProcessing(true);
     setToastMessage('');
 
-    // Load Razorpay official SDK script dynamically
-    const isScriptLoaded = await loadRazorpayScript();
-    
-    if (!isScriptLoaded) {
-      setIsProcessing(false);
-      setToastMessage('Razorpay SDK failed to load. Please check your network connection.');
-      return;
+    // Ensure Razorpay SDK script is loaded
+    if (!window.Razorpay) {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !window.Razorpay) {
+        setIsProcessing(false);
+        setToastMessage('Razorpay SDK failed to load. Please check your internet connection.');
+        return;
+      }
     }
 
     const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TJm7wCoJrC5TFa';
@@ -92,7 +93,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
       amount: amountInPaise,
       currency: 'INR',
       name: "Acharya's Kitchen",
-      description: "Order Payment - Authentic Indian Cuisine",
+      description: "Food Order Payment",
       image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBCBqoCF2eJMk0dv6amHm_TTGFgisJdRw4S3VURCeL4r2TqA4tHJN9wtl2osP8XgB87WWG_2crCE-26wA5SFbNg2rBMD357op3qlI31kJ2w0Eu_LyecYYvSArssmnta7rt4C-oXX6olp2g9MaSg_lOvxka4m_nqlEllgNKJzCQshbhDd5uq2jL7n3r10exyLgag8CQJCKvyFIEkF3PyOBs3nev4USNEZnH8xkI6hdngsj3Xt5AGZDJCS-BnNSUQD8N67bDZ1c2kPC8",
       prefill: {
         name: formData.name,
@@ -103,32 +104,32 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
         color: '#873415' // Terracotta primary brand color
       },
       handler: function (response) {
+        // ONLY inside this callback function, save order to Firestore and transition to confirmation screen
         setIsProcessing(false);
         handleFinalizeOrder(response.razorpay_payment_id, 'Razorpay');
       },
       modal: {
         ondismiss: function () {
           setIsProcessing(false);
-          setToastMessage('Payment modal dismissed. You can complete your order when ready.');
+          setToastMessage('Payment modal dismissed. Your order has not been placed.');
         }
       }
     };
 
     try {
-      const razorpayInstance = new window.Razorpay(options);
-      
-      razorpayInstance.on('payment.failed', function (response) {
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', function (response) {
         setIsProcessing(false);
         const reason = response.error?.description || 'Payment failed. Please try again.';
         setToastMessage(`Payment Failed: ${reason}`);
       });
 
-      razorpayInstance.open();
+      rzp.open();
     } catch (err) {
-      console.warn("Razorpay Checkout initialization error:", err);
+      console.error("Razorpay Modal Launch Error:", err);
       setIsProcessing(false);
-      // Fallback test simulation if key is invalid or blocked
-      handleFinalizeOrder(`pay_test_${Math.floor(100000 + Math.random() * 900000)}`, 'Razorpay Test');
+      setToastMessage('Unable to open Razorpay payment window. Please try again.');
     }
   };
 
