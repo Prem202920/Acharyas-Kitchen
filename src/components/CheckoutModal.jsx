@@ -100,6 +100,12 @@ export default function CheckoutModal({ isOpen, onClose, cart, user, onClearCart
         email: user?.email || 'customer@acharyaskitchen.com',
         contact: formData.phone || '+919876543210'
       },
+      method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true
+      },
       theme: {
         color: '#873415' // Terracotta primary brand color
       },
